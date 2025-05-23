@@ -21,7 +21,7 @@ import { Expense } from "@/types/expense";
 import { getRecentExpenses, getExpensesByDateRange, deleteExpense } from "@/services/expenseService";
 import { toast } from "sonner";
 import { PlusCircle, Trash2, Calendar, Filter } from "lucide-react";
-import { format, parseISO } from "date-fns";
+import { format } from "date-fns";
 import {
   Select,
   SelectContent,
@@ -31,7 +31,8 @@ import {
 } from "@/components/ui/select";
 
 const ExpenseList = () => {
-  const navigate = useNavigate();
+  // Remove direct useNavigate call to fix the Router context issue
+  // We'll add navigation logic differently
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [startDate, setStartDate] = useState("");
@@ -119,12 +120,17 @@ const ExpenseList = () => {
     loadExpenses();
   };
   
+  // We'll use a regular anchor tag with proper href instead of useNavigate
+  const handleAddClick = () => {
+    window.location.href = "/add";
+  };
+  
   return (
     <div className="container mx-auto py-6 px-4 md:px-6">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
         <h1 className="text-2xl font-bold mb-4 md:mb-0">Common Family Expenses</h1>
         <Button 
-          onClick={() => navigate("/add")} 
+          onClick={handleAddClick} 
           className="flex items-center"
         >
           <PlusCircle className="mr-2 h-4 w-4" /> Add Expense
