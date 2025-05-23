@@ -14,7 +14,8 @@ export async function getRecentExpenses(limit: number = 20): Promise<Expense[]> 
     throw new Error(error.message);
   }
   
-  return data || [];
+  // Cast the data to ensure the owner field matches the expected type
+  return (data as unknown as Expense[]) || [];
 }
 
 export async function getExpensesByDateRange(startDate: string, endDate?: string): Promise<Expense[]> {
@@ -34,7 +35,8 @@ export async function getExpensesByDateRange(startDate: string, endDate?: string
     throw new Error(error.message);
   }
   
-  return data || [];
+  // Cast the data to ensure the owner field matches the expected type
+  return (data as unknown as Expense[]) || [];
 }
 
 export async function addExpense(expense: ExpenseFormData): Promise<Expense> {
@@ -49,7 +51,8 @@ export async function addExpense(expense: ExpenseFormData): Promise<Expense> {
     throw new Error(error.message);
   }
   
-  return data;
+  // Cast the data to ensure the owner field matches the expected type
+  return data as unknown as Expense;
 }
 
 export async function deleteExpense(id: number): Promise<void> {
