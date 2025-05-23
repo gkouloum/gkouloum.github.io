@@ -1,6 +1,5 @@
 
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { 
   Card, 
   CardContent, 
@@ -37,7 +36,7 @@ const ExpenseList = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
-  const [selectedOwner, setSelectedOwner] = useState<string>("");
+  const [selectedOwner, setSelectedOwner] = useState<string>("all");
   const [totalAmount, setTotalAmount] = useState(0);
   
   // Format date for display
@@ -69,7 +68,7 @@ const ExpenseList = () => {
       }
       
       // Filter by owner if selected
-      if (selectedOwner) {
+      if (selectedOwner && selectedOwner !== "all") {
         data = data.filter(expense => expense.owner === selectedOwner);
       }
       
@@ -116,7 +115,7 @@ const ExpenseList = () => {
   const clearFilters = () => {
     setStartDate("");
     setEndDate("");
-    setSelectedOwner("");
+    setSelectedOwner("all");
     loadExpenses();
   };
   
@@ -174,7 +173,7 @@ const ExpenseList = () => {
                   <SelectValue placeholder="All owners" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All owners</SelectItem>
+                  <SelectItem value="all">All owners</SelectItem>
                   <SelectItem value="Makis">Makis</SelectItem>
                   <SelectItem value="Vicky">Vicky</SelectItem>
                 </SelectContent>
