@@ -20,8 +20,15 @@ import {
 import { Expense } from "@/types/expense";
 import { getRecentExpenses, getExpensesByDateRange, deleteExpense } from "@/services/expenseService";
 import { toast } from "sonner";
-import { PlusCircle, Trash2, Calendar } from "lucide-react";
+import { PlusCircle, Trash2, Calendar, Filter } from "lucide-react";
 import { format, parseISO } from "date-fns";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const ExpenseList = () => {
   const navigate = useNavigate();
@@ -29,6 +36,7 @@ const ExpenseList = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
+  const [selectedOwner, setSelectedOwner] = useState<string>("");
   const [totalAmount, setTotalAmount] = useState(0);
   
   // Format date for display
@@ -57,6 +65,11 @@ const ExpenseList = () => {
         data = await getExpensesByDateRange(startDate, endDate || undefined);
       } else {
         data = await getRecentExpenses();
+      }
+      
+      // Filter by owner if selected
+      if (selectedOwner) {
+        data = data.filter(expense => expense.owner === selectedOwner);
       }
       
       setExpenses(data);
@@ -102,6 +115,7 @@ const ExpenseList = () => {
   const clearFilters = () => {
     setStartDate("");
     setEndDate("");
+    setSelectedOwner("");
     loadExpenses();
   };
   
@@ -120,7 +134,7 @@ const ExpenseList = () => {
       <Card className="mb-6">
         <CardHeader>
           <CardTitle className="text-lg flex items-center">
-            <Calendar className="mr-2 h-5 w-5" /> Filter Expenses
+            <Filter className="mr-2 h-5 w-5" /> Filter Expenses
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -144,6 +158,21 @@ const ExpenseList = () => {
                 value={endDate}
                 onChange={(e) => setEndDate(e.target.value)}
               />
+            </div>
+            <div className="flex-1">
+              <label className="block text-sm font-medium mb-1">
+                Owner
+              </label>
+              <Select value={selectedOwner} onValueChange={setSelectedOwner}>
+                <SelectTrigger>
+                  <SelectValue placeholder="All owners" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">All owners</SelectItem>
+                  <SelectItem value="Makis">Makis</SelectItem>
+                  <SelectItem value="Vicky">Vicky</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
             <div className="flex items-end space-x-2">
               <Button onClick={handleFilter}>Apply Filter</Button>
