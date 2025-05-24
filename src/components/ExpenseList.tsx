@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { 
   Card, 
@@ -39,7 +40,8 @@ const ExpenseList = () => {
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [selectedOwner, setSelectedOwner] = useState<string>("all");
-  const [totalAmount, setTotalAmount] = useState(0);
+  const [makisTotal, setMakisTotal] = useState(0);
+  const [vickyTotal, setVickyTotal] = useState(0);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   
   // Format date for display
@@ -77,9 +79,16 @@ const ExpenseList = () => {
       
       setExpenses(data);
       
-      // Calculate total
-      const sum = data.reduce((acc, expense) => acc + expense.amount, 0);
-      setTotalAmount(sum);
+      // Calculate separate totals for Makis and Vicky
+      const makisSum = data
+        .filter(expense => expense.owner === "Makis")
+        .reduce((acc, expense) => acc + expense.amount, 0);
+      const vickySum = data
+        .filter(expense => expense.owner === "Vicky")
+        .reduce((acc, expense) => acc + expense.amount, 0);
+      
+      setMakisTotal(makisSum);
+      setVickyTotal(vickySum);
     } catch (error) {
       toast.error("Failed to load expenses");
       console.error(error);
@@ -96,14 +105,20 @@ const ExpenseList = () => {
     if (confirm("Are you sure you want to delete this expense?")) {
       try {
         await deleteExpense(id);
-        setExpenses(expenses.filter(expense => expense.id !== id));
+        const updatedExpenses = expenses.filter(expense => expense.id !== id);
+        setExpenses(updatedExpenses);
         toast.success("Expense deleted successfully");
         
-        // Recalculate total
-        const sum = expenses
-          .filter(expense => expense.id !== id)
+        // Recalculate totals
+        const makisSum = updatedExpenses
+          .filter(expense => expense.owner === "Makis")
           .reduce((acc, expense) => acc + expense.amount, 0);
-        setTotalAmount(sum);
+        const vickySum = updatedExpenses
+          .filter(expense => expense.owner === "Vicky")
+          .reduce((acc, expense) => acc + expense.amount, 0);
+        
+        setMakisTotal(makisSum);
+        setVickyTotal(vickySum);
       } catch (error) {
         toast.error("Failed to delete expense");
         console.error(error);
@@ -211,15 +226,23 @@ const ExpenseList = () => {
         <CardHeader>
           <CardTitle className="flex justify-between items-center">
             <span className="text-xl">Recent Expenses</span>
-            <div className="text-right">
-              <div className="text-2xl font-bold text-green-600">
-                {formatCurrency(totalAmount)}
+            <div className="flex gap-6">
+              <div className="text-right">
+                <div className="text-lg font-bold text-blue-600">
+                  {formatCurrency(makisTotal)}
+                </div>
+                <div className="text-xs text-gray-500">Makis Total</div>
               </div>
-              <div className="text-sm text-gray-500">Total Amount</div>
+              <div className="text-right">
+                <div className="text-lg font-bold text-purple-600">
+                  {formatCurrency(vickyTotal)}
+                </div>
+                <div className="text-xs text-gray-500">Vicky Total</div>
+              </div>
             </div>
           </CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-3">
           {isLoading ? (
             <div className="text-center py-8">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto"></div>
@@ -236,41 +259,43 @@ const ExpenseList = () => {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="w-16">ID</TableHead>
-                    <TableHead>Owner</TableHead>
-                    <TableHead>Date</TableHead>
-                    <TableHead>Description</TableHead>
-                    <TableHead className="text-right">Amount</TableHead>
-                    <TableHead>Comment</TableHead>
-                    <TableHead className="w-16 text-right">Actions</TableHead>
+                    <TableHead className="w-12 text-xs">ID</TableHead>
+                    <TableHead className="text-xs">Owner</TableHead>
+                    <TableHead className="text-xs">Date</TableHead>
+                    <TableHead className="text-xs">Description</TableHead>
+                    <TableHead className="text-right text-xs">Amount</TableHead>
+                    <TableHead className="text-xs">Comment</TableHead>
+                    <TableHead className="w-12 text-right text-xs">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {expenses.map((expense) => (
                     <TableRow key={expense.id} className="hover:bg-gray-50">
-                      <TableCell className="font-medium">{expense.id}</TableCell>
-                      <TableCell>
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                      <TableCell className="font-medium text-xs py-2">{expense.id}</TableCell>
+                      <TableCell className="py-2">
+                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
+                          expense.owner === 'Makis' ? 'bg-blue-100 text-blue-800' : 'bg-purple-100 text-purple-800'
+                        }`}>
                           {expense.owner}
                         </span>
                       </TableCell>
-                      <TableCell>{formatDate(expense.date)}</TableCell>
-                      <TableCell className="font-medium">{expense.description}</TableCell>
-                      <TableCell className="text-right font-bold text-green-600">
+                      <TableCell className="text-xs py-2">{formatDate(expense.date)}</TableCell>
+                      <TableCell className="font-medium text-xs py-2">{expense.description}</TableCell>
+                      <TableCell className="text-right font-bold text-green-600 text-xs py-2">
                         {formatCurrency(expense.amount)}
                       </TableCell>
-                      <TableCell className="max-w-[200px] truncate text-gray-600">
+                      <TableCell className="max-w-[150px] truncate text-gray-600 text-xs py-2">
                         {expense.comment || '-'}
                       </TableCell>
-                      <TableCell className="text-right">
+                      <TableCell className="text-right py-2">
                         <Button
                           variant="ghost"
                           size="icon"
                           onClick={() => handleDelete(expense.id)}
                           title="Delete expense"
-                          className="hover:bg-red-50 hover:text-red-600"
+                          className="hover:bg-red-50 hover:text-red-600 h-6 w-6"
                         >
-                          <Trash2 className="h-4 w-4" />
+                          <Trash2 className="h-3 w-3" />
                         </Button>
                       </TableCell>
                     </TableRow>
