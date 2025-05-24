@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { 
   Card, 
@@ -19,7 +18,7 @@ import {
 import { Expense } from "@/types/expense";
 import { getRecentExpenses, getExpensesByDateRange, deleteExpense } from "@/services/expenseService";
 import { toast } from "sonner";
-import { PlusCircle, Trash2, Calendar, Filter } from "lucide-react";
+import { PlusCircle, Trash2, Calendar, Filter, ChevronDown, ChevronUp } from "lucide-react";
 import { format } from "date-fns";
 import {
   Select,
@@ -28,16 +27,20 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 
 const ExpenseList = () => {
-  // Remove direct useNavigate call to fix the Router context issue
-  // We'll add navigation logic differently
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [selectedOwner, setSelectedOwner] = useState<string>("all");
   const [totalAmount, setTotalAmount] = useState(0);
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
   
   // Format date for display
   const formatDate = (dateString: string) => {
@@ -119,88 +122,115 @@ const ExpenseList = () => {
     loadExpenses();
   };
   
-  // We'll use a regular anchor tag with proper href instead of useNavigate
   const handleAddClick = () => {
     window.location.href = "/add";
   };
   
   return (
-    <div className="container mx-auto py-6 px-4 md:px-6">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
-        <h1 className="text-2xl font-bold mb-4 md:mb-0">Common Family Expenses</h1>
-        <Button 
-          onClick={handleAddClick} 
-          className="flex items-center"
-        >
-          <PlusCircle className="mr-2 h-4 w-4" /> Add Expense
-        </Button>
+    <div className="container mx-auto py-6 px-4 md:px-6 space-y-6">
+      {/* Header */}
+      <div className="text-center">
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">Family Expenses</h1>
+        <p className="text-gray-600">Track and manage your family's common expenses</p>
       </div>
       
-      <Card className="mb-6">
-        <CardHeader>
-          <CardTitle className="text-lg flex items-center">
-            <Filter className="mr-2 h-5 w-5" /> Filter Expenses
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-col md:flex-row gap-4">
-            <div className="flex-1">
-              <label className="block text-sm font-medium mb-1">
-                From Date
-              </label>
-              <Input
-                type="date"
-                value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
-              />
-            </div>
-            <div className="flex-1">
-              <label className="block text-sm font-medium mb-1">
-                To Date
-              </label>
-              <Input
-                type="date"
-                value={endDate}
-                onChange={(e) => setEndDate(e.target.value)}
-              />
-            </div>
-            <div className="flex-1">
-              <label className="block text-sm font-medium mb-1">
-                Owner
-              </label>
-              <Select value={selectedOwner} onValueChange={setSelectedOwner}>
-                <SelectTrigger>
-                  <SelectValue placeholder="All owners" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All owners</SelectItem>
-                  <SelectItem value="Makis">Makis</SelectItem>
-                  <SelectItem value="Vicky">Vicky</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="flex items-end space-x-2">
-              <Button onClick={handleFilter}>Apply Filter</Button>
-              <Button variant="outline" onClick={clearFilters}>Clear</Button>
-            </div>
-          </div>
-        </CardContent>
+      {/* Collapsible Filter Section */}
+      <Card className="border-2">
+        <Collapsible open={isFilterOpen} onOpenChange={setIsFilterOpen}>
+          <CollapsibleTrigger asChild>
+            <CardHeader className="cursor-pointer hover:bg-gray-50 transition-colors">
+              <CardTitle className="text-lg flex items-center justify-between">
+                <div className="flex items-center">
+                  <Filter className="mr-2 h-5 w-5" />
+                  Filter & Search
+                </div>
+                {isFilterOpen ? (
+                  <ChevronUp className="h-5 w-5" />
+                ) : (
+                  <ChevronDown className="h-5 w-5" />
+                )}
+              </CardTitle>
+            </CardHeader>
+          </CollapsibleTrigger>
+          <CollapsibleContent>
+            <CardContent className="pt-0">
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div>
+                  <label className="block text-sm font-medium mb-2 text-gray-700">
+                    From Date
+                  </label>
+                  <Input
+                    type="date"
+                    value={startDate}
+                    onChange={(e) => setStartDate(e.target.value)}
+                    className="w-full"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2 text-gray-700">
+                    To Date
+                  </label>
+                  <Input
+                    type="date"
+                    value={endDate}
+                    onChange={(e) => setEndDate(e.target.value)}
+                    className="w-full"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2 text-gray-700">
+                    Owner
+                  </label>
+                  <Select value={selectedOwner} onValueChange={setSelectedOwner}>
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="All owners" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All owners</SelectItem>
+                      <SelectItem value="Makis">Makis</SelectItem>
+                      <SelectItem value="Vicky">Vicky</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="flex items-end space-x-2">
+                  <Button onClick={handleFilter} className="flex-1">
+                    Apply
+                  </Button>
+                  <Button variant="outline" onClick={clearFilters} className="flex-1">
+                    Clear
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </CollapsibleContent>
+        </Collapsible>
       </Card>
       
-      <Card>
+      {/* Expenses Table */}
+      <Card className="border-2">
         <CardHeader>
           <CardTitle className="flex justify-between items-center">
-            <span>Recent Expenses</span>
-            <span className="text-lg">
-              Total: {formatCurrency(totalAmount)}
-            </span>
+            <span className="text-xl">Recent Expenses</span>
+            <div className="text-right">
+              <div className="text-2xl font-bold text-green-600">
+                {formatCurrency(totalAmount)}
+              </div>
+              <div className="text-sm text-gray-500">Total Amount</div>
+            </div>
           </CardTitle>
         </CardHeader>
         <CardContent>
           {isLoading ? (
-            <div className="text-center py-4">Loading expenses...</div>
+            <div className="text-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto"></div>
+              <p className="mt-2 text-gray-600">Loading expenses...</p>
+            </div>
           ) : expenses.length === 0 ? (
-            <div className="text-center py-4">No expenses found</div>
+            <div className="text-center py-8">
+              <Calendar className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+              <h3 className="text-lg font-medium text-gray-900 mb-2">No expenses found</h3>
+              <p className="text-gray-600">Start by adding your first expense</p>
+            </div>
           ) : (
             <div className="overflow-x-auto">
               <Table>
@@ -217,15 +247,19 @@ const ExpenseList = () => {
                 </TableHeader>
                 <TableBody>
                   {expenses.map((expense) => (
-                    <TableRow key={expense.id}>
-                      <TableCell>{expense.id}</TableCell>
-                      <TableCell>{expense.owner}</TableCell>
+                    <TableRow key={expense.id} className="hover:bg-gray-50">
+                      <TableCell className="font-medium">{expense.id}</TableCell>
+                      <TableCell>
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                          {expense.owner}
+                        </span>
+                      </TableCell>
                       <TableCell>{formatDate(expense.date)}</TableCell>
-                      <TableCell>{expense.description}</TableCell>
-                      <TableCell className="text-right font-medium">
+                      <TableCell className="font-medium">{expense.description}</TableCell>
+                      <TableCell className="text-right font-bold text-green-600">
                         {formatCurrency(expense.amount)}
                       </TableCell>
-                      <TableCell className="max-w-[200px] truncate">
+                      <TableCell className="max-w-[200px] truncate text-gray-600">
                         {expense.comment || '-'}
                       </TableCell>
                       <TableCell className="text-right">
@@ -234,6 +268,7 @@ const ExpenseList = () => {
                           size="icon"
                           onClick={() => handleDelete(expense.id)}
                           title="Delete expense"
+                          className="hover:bg-red-50 hover:text-red-600"
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
@@ -246,6 +281,18 @@ const ExpenseList = () => {
           )}
         </CardContent>
       </Card>
+      
+      {/* Add Expense Button - Fixed at bottom */}
+      <div className="fixed bottom-6 right-6">
+        <Button 
+          onClick={handleAddClick} 
+          size="lg"
+          className="shadow-lg hover:shadow-xl transition-shadow bg-blue-600 hover:bg-blue-700 rounded-full h-14 w-14 md:h-auto md:w-auto md:rounded-md md:px-6"
+        >
+          <PlusCircle className="h-6 w-6 md:mr-2" />
+          <span className="hidden md:inline">Add Expense</span>
+        </Button>
+      </div>
     </div>
   );
 };
